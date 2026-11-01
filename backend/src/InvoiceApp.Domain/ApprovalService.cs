@@ -39,17 +39,23 @@ public class ApprovalService
         var invoice = Find(invoiceId);
         EnsurePending(invoice);
 
-        var limit = CeilingFor(role);
-        if (invoice.Amount > limit)
+        if (role is not ("Manager" or "Director"))
         {
-            throw new ArgumentException(
-                $"{role} can approve invoices up to {Money(limit)}. This invoice is {Money(invoice.Amount)} and was not changed.");
+            throw new ArgumentException($"Role {role} cannot approve invoices. Nothing was changed.");
         }
 
-        invoice.Status = InvoiceStatus.Approved;
-        invoice.DecidedBy = approver;
-        invoice.DecidedAt = DateTime.UtcNow;
-        _repository.Update(invoice);
+        if (invoice.Amount > DirectorLimit)
+        {
+            return ApproveAsOneOfTwo(invoice, approver, role);
+        }
+
+        if (role == "Manager" && invoice.Amount > ManagerLimit)
+        {
+            throw new ArgumentException(
+                $"Manager can approve invoices up to {Money(ManagerLimit)}. This invoice is {Money(invoice.Amount)} and was not changed.");
+        }
+
+        Complete(invoice, approver);
         return invoice;
     }
 
@@ -71,12 +77,45 @@ public class ApprovalService
         return invoice;
     }
 
-    private static decimal CeilingFor(string role) => role switch
+    private Invoice ApproveAsOneOfTwo(Invoice invoice, string approver, string role)
     {
-        "Manager" => ManagerLimit,
-        "Director" => DirectorLimit,
-        _ => throw new ArgumentException($"Role {role} cannot approve invoices. Nothing was changed.")
-    };
+        if (invoice.Approvals.Count == 0)
+        {
+            invoice.Approvals.Add(Stamp(approver, role));
+            _repository.Update(invoice);
+            return invoice;
+        }
+
+        if (invoice.Approvals.Any(approval => string.Equals(approval.Username, approver, StringComparison.Ordinal)))
+        {
+            throw new ArgumentException("The same user cannot approve an invoice twice. Nothing was changed.");
+        }
+
+        if (role != "Director")
+        {
+            throw new ArgumentException("The second approver must be a director. Nothing was changed.");
+        }
+
+        invoice.Approvals.Add(Stamp(approver, role));
+        Complete(invoice, approver);
+        return invoice;
+    }
+
+    private void Complete(Invoice invoice, string approver)
+    {
+        invoice.Status = InvoiceStatus.Approved;
+        invoice.DecidedBy = approver;
+        invoice.DecidedAt = DateTime.UtcNow;
+        _repository.Update(invoice);
+    }
+
+    private static InvoiceApproval Stamp(string username, string role) =>
+        new()
+        {
+            Username = username,
+            Role = role,
+            At = DateTime.UtcNow
+        };
 
     private static string Money(decimal amount) =>
         amount.ToString("0.##", CultureInfo.InvariantCulture);
