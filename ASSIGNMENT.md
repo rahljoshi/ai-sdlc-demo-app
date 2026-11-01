@@ -2,7 +2,7 @@
 
 Feature: approval limits by role, on a fork of `NITIN1670/ai-sdlc-demo-app`.
 
-Pull request: see the open pull request on `rahljoshi/ai-sdlc-demo-app` for branch `feature/approval-limits-by-role`. The link is filled in after the pull request is opened.
+Pull request: https://github.com/rahljoshi/ai-sdlc-demo-app/pull/1
 
 Video: record this, upload it, and replace this sentence with the link. The recording is 8 to 10 minutes and is the only hand-in item left.
 
