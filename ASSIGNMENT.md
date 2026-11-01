@@ -4,7 +4,9 @@ Feature: approval limits by role, on a fork of `NITIN1670/ai-sdlc-demo-app`.
 
 Pull request: https://github.com/rahljoshi/ai-sdlc-demo-app/pull/1
 
-Video: record this, upload it, and replace this sentence with the link. The recording is 8 to 10 minutes and is the only hand-in item left.
+Video: included in the submission zip as `301212_Rahul_Joshi_demo.mp4`.
+
+Student: Rahul Joshi, employee code 301212, rahul.joshi02@nagarro.com.
 
 ## What was built
 
