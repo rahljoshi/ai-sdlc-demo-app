@@ -1,11 +1,17 @@
+using System.Globalization;
+
 namespace InvoiceApp.Domain;
 
 /// <summary>
 /// Moves an invoice through its lifecycle: Draft -> PendingApproval -> Approved or Rejected.
-/// One invoice at a time, decided as a whole by a single approver.
+/// One invoice at a time. A manager or director may approve within a ceiling.
+/// Amounts above that ceiling are refused and the invoice is left unchanged.
 /// </summary>
 public class ApprovalService
 {
+    public const decimal ManagerLimit = 50_000m;
+    public const decimal DirectorLimit = 500_000m;
+
     private readonly IInvoiceRepository _repository;
 
     public ApprovalService(IInvoiceRepository repository)
@@ -28,10 +34,17 @@ public class ApprovalService
         return invoice;
     }
 
-    public Invoice Approve(string invoiceId, string approver)
+    public Invoice Approve(string invoiceId, string approver, string role)
     {
         var invoice = Find(invoiceId);
         EnsurePending(invoice);
+
+        var limit = CeilingFor(role);
+        if (invoice.Amount > limit)
+        {
+            throw new ArgumentException(
+                $"{role} can approve invoices up to {Money(limit)}. This invoice is {Money(invoice.Amount)} and was not changed.");
+        }
 
         invoice.Status = InvoiceStatus.Approved;
         invoice.DecidedBy = approver;
@@ -57,6 +70,16 @@ public class ApprovalService
         _repository.Update(invoice);
         return invoice;
     }
+
+    private static decimal CeilingFor(string role) => role switch
+    {
+        "Manager" => ManagerLimit,
+        "Director" => DirectorLimit,
+        _ => throw new ArgumentException($"Role {role} cannot approve invoices. Nothing was changed.")
+    };
+
+    private static string Money(decimal amount) =>
+        amount.ToString("0.##", CultureInfo.InvariantCulture);
 
     private Invoice Find(string invoiceId) =>
         _repository.GetById(invoiceId)

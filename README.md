@@ -14,6 +14,9 @@ Open http://localhost:5000 and sign in:
 | --- | --- | --- |
 | `demo.approver` | `ChangeMe123!` | Approver |
 | `demo.admin` | `ChangeMe123!` | Admin |
+| `demo.manager` | `ChangeMe123!` | Manager |
+| `demo.director` | `ChangeMe123!` | Director |
+| `demo.director2` | `ChangeMe123!` | Director |
 
 These are demo accounts for a local, in-memory app. They are not real credentials.
 
