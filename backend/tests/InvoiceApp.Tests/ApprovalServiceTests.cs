@@ -199,6 +199,22 @@ public class ApprovalServiceTests
         Assert.Equal(new[] { "demo.manager", "demo.director" }, result.Approvals.Select(approval => approval.Username));
     }
 
+    [Fact]
+    public void Approve_SameUserIsBlockedEvenWhenAnotherApproverIsRecorded()
+    {
+        var invoice = Pending(600_000m);
+        invoice.Approvals.Add(new InvoiceApproval { Username = "demo.director", Role = "Director", At = DateTime.UtcNow });
+        invoice.Approvals.Add(new InvoiceApproval { Username = "demo.manager", Role = "Manager", At = DateTime.UtcNow });
+        var service = ServiceFor(invoice);
+
+        var error = Assert.Throws<ArgumentException>(() => service.Approve("INV-1", "demo.director", "Director"));
+
+        Assert.Contains("same user", error.Message, StringComparison.OrdinalIgnoreCase);
+        Assert.Equal(InvoiceStatus.PendingApproval, invoice.Status);
+        Assert.Null(invoice.DecidedBy);
+        Assert.Equal(2, invoice.Approvals.Count);
+    }
+
     [Theory]
     [InlineData("Approver")]
     [InlineData("Admin")]

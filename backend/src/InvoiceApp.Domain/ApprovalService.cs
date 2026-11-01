@@ -3,9 +3,10 @@ using System.Globalization;
 namespace InvoiceApp.Domain;
 
 /// <summary>
-/// Moves an invoice through its lifecycle: Draft -> PendingApproval -> Approved or Rejected.
-/// One invoice at a time. A manager or director may approve within a ceiling.
-/// Amounts above that ceiling are refused and the invoice is left unchanged.
+/// Moves an invoice through Draft, PendingApproval, Approved, or Rejected.
+/// A manager approves up to 50,000. A director approves alone up to 500,000.
+/// Above 500,000, a second and different director is required.
+/// A refused attempt leaves the invoice unchanged.
 /// </summary>
 public class ApprovalService
 {
