@@ -1,0 +1,10 @@
+Stryker.NET 4.13.0
+Command (from backend): dotnet stryker --solution InvoiceApp.sln --project src/InvoiceApp.Domain/InvoiceApp.Domain.csproj
+When: after the approval-limit rules and tests, including the same-user case with another approver already recorded. 18 unit tests.
+Final mutation score: 57.53%
+
+ApprovalService.cs: Killed=42, Survived=10, Ignored=14, CompileError=2
+DiscountCalculator.cs: NoCoverage=17, Ignored=5
+Invoice.cs: Survived=4
+
+Score is killed divided by killed + survived + no coverage. Ignored mutants and compile errors are excluded. DiscountCalculator is unchanged and still has no tests, so it keeps the project score below the ApprovalService result. ApprovalService killed mutants rose from 12 before the feature to 42 after it.

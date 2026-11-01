@@ -1,0 +1,20 @@
+{
+  "version": 1,
+  "hooks": {
+    "afterAgentResponse": [
+      {
+        "command": "node .cursor/hooks/log-interaction.js afterAgentResponse"
+      }
+    ],
+    "subagentStop": [
+      {
+        "command": "node .cursor/hooks/log-interaction.js subagentStop"
+      }
+    ],
+    "stop": [
+      {
+        "command": "node .cursor/hooks/log-interaction.js stop"
+      }
+    ]
+  }
+}

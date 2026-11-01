@@ -68,12 +68,16 @@
       const approve = el('button', { type: 'button', 'aria-label': `Approve invoice ${invoice.id}` }, 'Approve');
       const reject = el('button', { type: 'button', class: 'danger', 'aria-label': `Reject invoice ${invoice.id}` }, 'Reject');
       const reason = el('input', { id: reasonId, 'aria-label': `Rejection reason for ${invoice.id}`, placeholder: 'Reason (required to reject)' });
+      const progress = invoice.approvals && invoice.approvals.length === 1
+        ? '1 of 2 approvals recorded. A different director must approve next.'
+        : '';
 
       approve.addEventListener('click', () => decide(`/approvals/${invoice.id}/approve`, {}));
       reject.addEventListener('click', () => decide(`/approvals/${invoice.id}/reject`, { reason: reason.value }));
 
       return el('li', {},
         el('span', {}, `${invoice.id} · ${invoice.customerName} · ${money.format(invoice.amount)}`),
+        progress ? el('span', {}, progress) : '',
         el('span', {}, approve),
         el('div', { class: 'reject-row' }, reason, reject));
     }));
@@ -85,6 +89,7 @@
       await api(path, { method: 'POST', body: JSON.stringify(payload) });
       await refresh();
     } catch (error) {
+      await refresh().catch(() => {});
       showError('decision-error', error.message);
     }
   }
